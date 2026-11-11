@@ -277,12 +277,12 @@ const PARTS = {
   ring:   {n:'年輪', r:'ねんりん', d:'1年間に成長した部分。春〜夏の「早材」（色がうすい）と、夏の終わり〜秋の「晩材」（色がこい）が1組で1年分。'},
   koguchi:{n:'こぐち', r:'木口', d:'繊維方向に直角に切った面。年輪が見える。水を吸いやすく、削りにくい。'},
   koba:   {n:'こば', r:'木端', d:'板の細長い側面。繊維方向に平行な、せまい面。'},
-  kiomote:{n:'木表', r:'きおもて', d:'板目材の、樹皮に近い側の面。こぐちの年輪の弧が、こちらにふくらんで見える。乾くとこちら側がへこむように反る。'},
-  kiura:  {n:'木裏', r:'きうら', d:'板目材の、中心（髄）に近い側の面。'},
+  kiomote:{n:'木表', r:'きおもて', img:['kiomote-log','kiomote-kiura'], d:'板目材の、樹皮に近い側の面。こぐちの年輪の弧が、こちらにふくらんで見える。乾くとこちら側がへこむように反る。'},
+  kiura:  {n:'木裏', r:'きうら', img:['kiomote-kiura','kiomote-log'], d:'板目材の、中心（髄）に近い側の面。板を裏返すと、こぐちの年輪の弧が下向きにふくらんで見える（下の写真の右）。'},
   fushi:  {n:'節', r:'ふし', d:'枝のあと。かたく、割れたり抜けたりしやすいので、材料取りで注意する。'},
   sen:    {n:'繊維方向', r:'せんいほうこう', d:'木の細胞（管）が並んでいる向き＝木が伸びた向き。この向きに強く、乾燥でもほとんど縮まない。'},
-  masa:   {n:'まさ目材', r:'まさめざい', d:'年輪に直角になるように（中心を通るように）切った板。木目がまっすぐ平行で、反りや変形が少ない。'},
-  itame:  {n:'板目材', r:'いためざい', d:'年輪に接するように（中心からはずれた所で）切った板。山形の木目が出る。乾くと木表側に反りやすい。'},
+  masa:   {n:'まさ目材', r:'まさめざい', img:['kidori','masame-itame'], d:'年輪に直角になるように（中心を通るように）切った板。木目がまっすぐ平行で、反りや変形が少ない。'},
+  itame:  {n:'板目材', r:'いためざい', img:['kidori','masame-itame'], d:'年輪に接するように（中心からはずれた所で）切った板。山形の木目が出る。乾くと木表側に反りやすい。'},
 };
 let pView = 'cut', chTarget = null, chOk = 0, chN = 0;
 const pStage = $('#pStage');
@@ -303,7 +303,8 @@ function pick(key, node){
     $('#chScore').hidden = false; $('#chScore').textContent = `${chOk} / ${chN}`;
     if(key===chTarget) setTimeout(nextChallenge, 900);
   }
-  $('#pInfo').innerHTML = `${res}<h3><ruby>${P.n}<rt>${P.r}</rt></ruby></h3><p>${P.d}</p>`;
+  const pics = (P.img||[]).map(f => `<img src="img/${f}.jpg" alt="${P.n}の写真" style="display:block;width:100%;height:150px;object-fit:contain;background:#f6efe2;border-radius:10px;">`).join('');
+  $('#pInfo').innerHTML = `${res}<h3><ruby>${P.n}<rt>${P.r}</rt></ruby></h3><p>${P.d}</p>` + (pics ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">${pics}</div>` : '');
 }
 /* 丸太の切り口：img/log-end.jpg（直径は画像の約98.5%、心材は半径の約65%）。透明な当たり判定を重ねる */
 const LOGIMG = {href:'img/log-end.jpg', S:487};
