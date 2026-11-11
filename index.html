@@ -270,39 +270,47 @@ addEventListener('load', () => { const t = tabs.find(b => '#'+b.dataset.t === lo
    ① 名前
    ========================================================= */
 const PARTS = {
-  pith:   {n:'髄', r:'ずい', d:'丸太の中心。木が育ち始めたところ。やわらかく、割れやすい。'},
-  heart:  {n:'心材', r:'しんざい', d:'中心に近い、色のこい部分。細胞がはたらきを終えた部分で、くさりにくく、虫にも強い。'},
-  sap:    {n:'辺材', r:'へんざい', d:'樹皮に近い、色のうすい部分。水や養分を運んでいる。心材より、くさりやすい。'},
+  pith:   {n:'髄', r:'ずい', d:'幹の中心。木が若いころにできた部分。やわらかく、割れやすい。'},
+  heart:  {n:'心材', r:'しんざい', d:'幹の内側の部分。多くの木で辺材より色がこい。水を運ぶはたらきを終えた部分で、辺材よりくさりにくく、虫にも強い。'},
+  sap:    {n:'辺材', r:'へんざい', d:'樹皮に近い、色のうすい部分。根から吸った水や、水にとけた養分を運んでいる。心材より、くさりやすい。'},
   bark:   {n:'樹皮', r:'じゅひ', d:'いちばん外側の皮。木を外から守っている。'},
-  ring:   {n:'年輪', r:'ねんりん', d:'1年間に成長した部分。春〜夏の「早材」（色がうすい）と、夏の終わり〜秋の「晩材」（色がこい）が1組で1年分。'},
+  ring:   {n:'年輪', r:'ねんりん', q:'「年輪」の線を1本タップしよう', d:'1年間に成長した部分。春〜夏の「早材」（色がうすい）と、夏の終わり〜秋の「晩材」（色がこい）が1組で1年分。こい線が年の区切り。'},
   koguchi:{n:'こぐち', r:'木口', d:'繊維方向に直角に切った面。年輪が見える。水を吸いやすく、削りにくい。'},
   koba:   {n:'こば', r:'木端', d:'板の細長い側面。繊維方向に平行な、せまい面。'},
-  kiomote:{n:'木表', r:'きおもて', img:['kiomote-log','kiomote-kiura'], d:'板目材の、樹皮に近い側の面。こぐちの年輪の弧が、こちらにふくらんで見える。乾くとこちら側がへこむように反る。'},
+  kiomote:{n:'木表', r:'きおもて', img:['kiomote-log','kiomote-kiura'], d:'板目材の、樹皮に近い側の面。こぐちの年輪の弧が、こちらにふくらんで見える。乾燥すると、一般にこちら側がへこむように反りやすい。'},
   kiura:  {n:'木裏', r:'きうら', img:['kiomote-kiura','kiomote-log'], d:'板目材の、中心（髄）に近い側の面。板を裏返すと、こぐちの年輪の弧が下向きにふくらんで見える（下の写真の右）。'},
-  fushi:  {n:'節', r:'ふし', d:'枝のあと。かたく、割れたり抜けたりしやすいので、材料取りで注意する。'},
-  sen:    {n:'繊維方向', r:'せんいほうこう', d:'木の細胞（管）が並んでいる向き＝木が伸びた向き。この向きに強く、乾燥でもほとんど縮まない。'},
-  masa:   {n:'まさ目材', r:'まさめざい', img:['kidori','masame-itame'], d:'年輪に直角になるように（中心を通るように）切った板。木目がまっすぐ平行で、反りや変形が少ない。'},
-  itame:  {n:'板目材', r:'いためざい', img:['kidori','masame-itame'], d:'年輪に接するように（中心からはずれた所で）切った板。山形の木目が出る。乾くと木表側に反りやすい。'},
+  fushi:  {n:'節', r:'ふし', d:'幹に取りこまれた枝のつけ根のあと。まわりの繊維が乱れていて、割れたり抜けたりしやすいので、材料取りで注意する。'},
+  sen:    {n:'繊維方向', r:'せんいほうこう', q:'「繊維方向」の矢印はどっち？', d:'木の細胞（管）が長く並んでいる向き＝木が伸びた向き。この向きの力に強く、乾燥してもほとんど縮まない。'},
+  senX:   {n:'繊維に直角な向き', r:'せんいにちょっかくなむき', d:'板のはばの向き。繊維方向ではない。この向きには割れやすく、乾燥で大きく縮む。'},
+  masa:   {n:'まさ目材', r:'まさめざい', q:'「まさ目材」を取る位置はどれ？', img:['kidori','masame-itame'], d:'年輪にほぼ直角になるように（中心を通るように）取った板。木目がまっすぐ平行で、反りは比較的小さい（縮みはある）。'},
+  itame:  {n:'板目材', r:'いためざい', q:'「板目材」を取る位置はどれ？', img:['kidori','masame-itame'], d:'年輪にほぼ接するように（中心からはずれた所で）取った板。山形の木目が出る。乾燥すると、木表側がへこむように反りやすい。'},
 };
-let pView = 'cut', chTarget = null, chOk = 0, chN = 0;
+let pView = 'cut', chTarget = null, chOk = 0, chN = 0, chFirst = true, chLock = false, chQueue = [];
 const pStage = $('#pStage');
 function partHit(node, key){
   node.classList.add('hit'); node.dataset.p = key;
-  node.addEventListener('click', ev => { ev.stopPropagation(); pick(key, node); });
+  node.addEventListener('click', ev => { ev.stopPropagation(); pick(key, node, ev); });
   return node;
 }
-function pick(key, node){
+/* 押した点の下にある部位をすべて集める（心材の中の年輪を押しても「心材」の答えになる） */
+function keysAt(ev){
+  if(!ev || ev.clientX===undefined) return [];
+  return [...new Set(document.elementsFromPoint(ev.clientX, ev.clientY).map(e => e.dataset && e.dataset.p).filter(Boolean))];
+}
+function pick(key, node, ev){
+  if(chTarget && chLock) return;
+  let res = '';
+  if(chTarget){
+    const ok = key===chTarget || keysAt(ev).includes(chTarget);
+    if(ok) key = chTarget;
+    if(chFirst){ chN++; if(ok) chOk++; chFirst = false; }
+    res = ok ? '<span class="pill ok">正解！</span> ' : `<span class="pill ng">ざんねん</span> そこは「${PARTS[key].n}」。もう一度さがそう。 `;
+    $('#chScore').hidden = false; $('#chScore').textContent = `1回目で正解 ${chOk} / ${chN}問`;
+    if(ok){ chLock = true; setTimeout(nextChallenge, 1000); }
+  }
   pStage.querySelectorAll('.sel').forEach(x => x.classList.remove('sel'));
   pStage.querySelectorAll(`[data-p="${key}"]`).forEach(x => { if(x.getAttribute('stroke')!==null || x.tagName!=='g') x.classList.add('sel'); });
   const P = PARTS[key];
-  let res = '';
-  if(chTarget){
-    chN++;
-    if(key===chTarget){ chOk++; res = '<span class="pill ok">正解！</span> '; }
-    else res = `<span class="pill ng">ざんねん</span> そこは「${P.n}」。「${PARTS[chTarget].n}」をさがそう。 `;
-    $('#chScore').hidden = false; $('#chScore').textContent = `${chOk} / ${chN}`;
-    if(key===chTarget) setTimeout(nextChallenge, 900);
-  }
   const pics = (P.img||[]).map(f => `<img src="img/${f}.jpg" alt="${P.n}の写真" style="display:block;width:100%;height:150px;object-fit:contain;background:#f6efe2;border-radius:10px;">`).join('');
   $('#pInfo').innerHTML = `${res}<h3><ruby>${P.n}<rt>${P.r}</rt></ruby></h3><p>${P.d}</p>` + (pics ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">${pics}</div>` : '');
 }
@@ -318,11 +326,12 @@ function drawCut(){
   const cx=300, cy=260, S=logPhoto(s,cx,cy), R = p => p*S/100;
   const ann = (r1, r2) => `M${cx-r2},${cy}a${r2},${r2} 0 1,0 ${2*r2},0a${r2},${r2} 0 1,0 ${-2*r2},0Z M${cx-r1},${cy}a${r1},${r1} 0 1,1 ${2*r1},0a${r1},${r1} 0 1,1 ${-2*r1},0Z`;
   const hitStyle = {fill:'rgba(255,255,255,0)', stroke:'rgba(255,180,0,0)', 'stroke-width':1};
-  partHit(el('path',Object.assign({d:ann(R(46),R(49.3)),'fill-rule':'evenodd'},hitStyle),s),'bark');
-  partHit(el('path',Object.assign({d:ann(R(32.5),R(46)),'fill-rule':'evenodd'},hitStyle),s),'sap');
+  partHit(el('path',Object.assign({d:ann(R(45.5),R(51)),'fill-rule':'evenodd'},hitStyle),s),'bark');
+  partHit(el('path',Object.assign({d:ann(R(32.5),R(45.5)),'fill-rule':'evenodd'},hitStyle),s),'sap');
   partHit(el('path',Object.assign({d:ann(R(2),R(32.5)),'fill-rule':'evenodd'},hitStyle),s),'heart');
-  [6.7,11.7,16.7,21.7,26.7,41.7].forEach(p => {
-    const h = el('circle',{cx,cy,r:R(p),fill:'none',stroke:'rgba(255,180,0,0)','stroke-width':10},s);
+  // 年輪のこい線（写真の明るさを中心から外へ調べた位置。半径％）
+  [6.7,11.8,17,22.3,27.7,32.4,38,41.7].forEach(p => {
+    const h = el('circle',{cx,cy,r:R(p),fill:'none',stroke:'rgba(255,180,0,0)','stroke-width':16},s);
     partHit(h,'ring');
   });
   partHit(el('circle',Object.assign({cx,cy,r:R(2)},hitStyle),s),'pith');
@@ -338,16 +347,21 @@ function drawBoard(){
   partHit(el('polygon',Object.assign({points:P([[1,72],[61,1],[99,3],[50,76]])},hs),s),'kiomote');
   partHit(el('polygon',Object.assign({points:P([[1,72],[50,76],[50,98],[1,94]])},hs),s),'koguchi');
   partHit(el('polygon',Object.assign({points:P([[50,76],[99,3],[99,25],[50,98]])},hs),s),'koba');
-  const a = el('g',{'pointer-events':'none'},s);
-  el('path',{d:'M140,250 L470,40',stroke:'#1d7f47','stroke-width':6,fill:'none','stroke-dasharray':'2 0'},a);
-  el('path',{d:'M470,40 l-24,4 l12,18z',fill:'#1d7f47'},a);
-  partHit(el('path',{d:'M140,250 L470,40',stroke:'rgba(0,0,0,0)','stroke-width':30,fill:'none'},s),'sen');
+  // 2本の矢印：長さの向き（繊維方向）と、はばの向き（繊維に直角）。どちらが繊維方向かを選ばせる
+  const arrow = (x1,y1,x2,y2,col,key) => {
+    const a = el('g',{'pointer-events':'none'},s), L = Math.hypot(x2-x1,y2-y1), ux=(x2-x1)/L, uy=(y2-y1)/L;
+    el('path',{d:`M${x1},${y1} L${x2-ux*14},${y2-uy*14}`,stroke:col,'stroke-width':7,fill:'none','stroke-linecap':'round'},a);
+    el('path',{d:`M${x2},${y2} L${x2-ux*24-uy*11},${y2-uy*24+ux*11} L${x2-ux*24+uy*11},${y2-uy*24-ux*11}Z`,fill:col},a);
+    partHit(el('path',{d:`M${x1},${y1} L${x2},${y2}`,stroke:'rgba(0,0,0,0)','stroke-width':34,fill:'none'},s),key);
+  };
+  arrow(110,262,360,104,'#1d7f47','sen');
+  arrow(300,74,505,86,'#2459a6','senX');
   // 節：写真の節の中心は (1500×1000 で) 約 (730,525) → 600×400 で (292,210)。矢印より上に重ねる
   partHit(el('ellipse',Object.assign({cx:292, cy:210, rx:40, ry:28},hs),s),'fushi');
   const fb = el('g',{class:'hit'},s);
-  el('rect',{x:170,y:410,width:260,height:42,rx:12,fill:'#8a5a2b'},fb);
-  txt('下の面（木裏）を見る', 300, 438, {fill:'#fff','font-size':18}, fb);
-  fb.dataset.p='kiura'; fb.addEventListener('click', ev => { ev.stopPropagation(); pick('kiura', fb); });
+  el('rect',{x:150,y:410,width:300,height:42,rx:12,fill:'#8a5a2b'},fb);
+  txt('下の面（木裏）の写真を見る', 300, 438, {fill:'#fff','font-size':18}, fb);
+  fb.addEventListener('click', ev => { ev.stopPropagation(); if(chTarget) return; pick('kiura', fb); });
   return s;
 }
 /* 木取り：同じ切り口の写真に、まさ目材・板目材の取り方を重ねる */
@@ -367,14 +381,24 @@ document.querySelectorAll('#pView button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#pView button').forEach(x => x.setAttribute('aria-pressed', x===b));
   pView = b.dataset.v; render(); if(chTarget) nextChallenge(true);
 });
-const VIEWPARTS = {cut:['pith','heart','sap','bark','ring'], board:['koguchi','koba','kiomote','kiura','fushi','sen'], take:['masa','itame']};
+/* 木裏は写真に写っていないので出題しない（ボタンで写真を見るだけ） */
+const VIEWPARTS = {cut:['pith','heart','sap','bark','ring'], board:['koguchi','koba','kiomote','fushi','sen'], take:['masa','itame']};
+/* 画面ごとに全部の部位を1回ずつ、順番をまぜて出す */
 function nextChallenge(keep){
   const list = VIEWPARTS[pView];
-  let k; do { k = list[Math.floor(Math.random()*list.length)]; } while(list.length>1 && k===chTarget && !keep);
-  chTarget = k;
-  $('#chQ').textContent = `「${PARTS[k].n}」はどこ？`;
+  if(keep || !chQueue.length || !chQueue.every(k => list.includes(k))){
+    chQueue = list.slice().sort(() => Math.random()-.5);
+    if(chQueue.length>1 && chQueue[0]===chTarget) chQueue.push(chQueue.shift());
+  }
+  const k = chQueue.shift();
+  chTarget = k; chFirst = true; chLock = false;
+  pStage.querySelectorAll('.sel').forEach(x => x.classList.remove('sel'));
+  $('#chQ').textContent = PARTS[k].q || `「${PARTS[k].n}」はどこ？`;
 }
-$('#chStart').onclick = () => { chOk=0; chN=0; $('#chScore').hidden=true; $('#chStart').textContent='次の問題'; nextChallenge(); };
+$('#chStart').onclick = () => {
+  if(!chTarget){ chOk=0; chN=0; $('#chScore').hidden=true; $('#chStart').textContent='とばして次へ'; nextChallenge(true); }
+  else { if(chFirst){ chN++; chFirst=false; $('#chScore').hidden=false; $('#chScore').textContent=`1回目で正解 ${chOk} / ${chN}問`; } nextChallenge(); }
+};
 render();
 
 /* =========================================================
@@ -698,16 +722,16 @@ drawStack();
    ⑥ チェック
    ========================================================= */
 const Q = [
-  ['主に建築（柱・板）に使われ、比較的軽くやわらかいのは？', ['針葉樹','広葉樹'], 0, 'スギ・ヒノキ・マツなどの針葉樹。'],
-  ['木の種類によって重さ（密度）がちがうのは、なぜ？', ['細胞の壁の厚さと、すき間の大きさがちがうから','木の色がちがうから','年輪の数がちがうから'], 0, '壁があつく、すき間が小さいほど重くかたい。'],
-  ['春〜夏に育つ、色がうすくやわらかい部分は？', ['早材','晩材','心材'], 0, '夏の終わり〜秋に育つ、色がこい部分が晩材。'],
-  ['板目材の、樹皮に近い側の面を何という？', ['木表','木裏','こば'], 0, '中心に近い側が木裏。'],
-  ['繊維方向に直角に切った、年輪が見える面は？', ['こぐち','こば','木表'], 0, '細長い側面がこば。'],
-  ['板を2つの台に渡して押すとき、強いのはどっち？', ['木目が渡る向きと同じ','木目が渡る向きと直角','どちらも同じ'], 0, '直角だと、木目にそってパキッと割れる。'],
-  ['乾燥で、いちばん大きく縮む方向は？', ['接線方向','半径方向','繊維方向'], 0, '接線10：半径5：繊維0.5〜1。'],
-  ['板目材は、乾くとどうなる？', ['木表側がへこむように反る','木裏側がへこむように反る','ほとんど変形しない'], 0, 'ほとんど変形しないのは、まさ目材。'],
-  ['うすい単板を、繊維方向が直交するように貼り合わせた材料は？', ['合板','集成材','パーティクルボード'], 0, '集成材は繊維方向をそろえて重ねる。'],
-  ['木材の小片を接着剤で固めて熱圧した材料は？', ['パーティクルボード','ファイバーボード','CLT'], 0, '繊維まで細かくして固めたものがファイバーボード。'],
+  ['建築の柱や板によく使われるスギ・ヒノキ・マツは、どちらの仲間？', ['針葉樹','広葉樹'], 0, '針葉樹には、比較的軽くやわらかい材が多い（樹種によるちがいもある）。'],
+  ['同じ大きさで、同じくらい乾いた木材のうち、重い（密度が大きい）のはどれ？', ['細胞の壁の部分が多い木材','細胞のすき間の部分が多い木材','壁とすき間が半分ずつの木材'], 0, '細胞の壁が占める割合が大きいほど、一般に重く、かたい。'],
+  ['スギなどで、春〜夏に育つ、色がうすくやわらかい部分は？', ['早材（そうざい）','晩材（ばんざい）','心材（しんざい）'], 0, '夏の終わり〜秋に育つ、色がこい部分が晩材。'],
+  ['板目材の、樹皮に近い側の面を何という？', ['木表','木裏','こば'], 0, '樹皮に近い側が木表、中心（髄）に近い側が木裏。'],
+  ['繊維方向に直角に切った、年輪が見える面は？', ['こぐち','こば','木表'], 0, 'こぐちは繊維方向に直角な面。こばは繊維方向に平行な、せまい側面。'],
+  ['同じ木・同じ大きさで節のない板を、2つの台に渡して、まん中を上から押す。折れにくいのは？', ['繊維方向が、台から台へ渡る向き','繊維方向が、台から台へ渡る向きと直角','どちらも同じ'], 0, '繊維方向が台から台へ渡っている板のほうが、曲げる力に強い。直角だと、繊維にそってパキッと割れる。'],
+  ['木材が乾燥して縮むとき、縮む割合がいちばん大きい方向は？', ['接線方向','半径方向','繊維方向'], 0, '接線方向（年輪にそう向き）がいちばん大きい。授業の「10：5：0.5〜1」は、縮みやすさをくらべた割合のめやす。'],
+  ['板目材を、自由に反れる状態で乾燥させると、一般にどう反りやすい？', ['木表側がへこむ','木裏側がへこむ','表と裏のどちらにも同じように反る'], 0, '方向によって縮み方がちがうため、木表側がへこみやすい。まさ目材はこの反りが比較的小さいが、縮みは起こる。'],
+  ['うすい単板を、となり合う単板の繊維方向が直交するように貼り合わせた材料は？', ['合板','集成材','パーティクルボード'], 0, '合板は単板を交互に直交させる。集成材は、ひき板の繊維方向をそろえて接着する。'],
+  ['木材の小片（チップ）に接着剤を加え、熱と圧力で板にした材料は？', ['パーティクルボード','ファイバーボード','合板'], 0, '小片を使うのがパーティクルボード、ほぐした繊維を使うのがファイバーボード。'],
 ];
 let solved = 0; const qList = $('#qList');
 Q.forEach(([q, ch, ans, ex], qi) => {
