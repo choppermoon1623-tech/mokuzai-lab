@@ -338,11 +338,12 @@ function drawBoard(){
   partHit(el('polygon',Object.assign({points:P([[1,72],[61,1],[99,3],[50,76]])},hs),s),'kiomote');
   partHit(el('polygon',Object.assign({points:P([[1,72],[50,76],[50,98],[1,94]])},hs),s),'koguchi');
   partHit(el('polygon',Object.assign({points:P([[50,76],[99,3],[99,25],[50,98]])},hs),s),'koba');
-  partHit(el('ellipse',Object.assign({cx:50*6, cy:47*4, rx:22, ry:14},hs),s),'fushi');
-  const a = el('g',{},s);
+  const a = el('g',{'pointer-events':'none'},s);
   el('path',{d:'M140,250 L470,40',stroke:'#1d7f47','stroke-width':6,fill:'none','stroke-dasharray':'2 0'},a);
   el('path',{d:'M470,40 l-24,4 l12,18z',fill:'#1d7f47'},a);
   partHit(el('path',{d:'M140,250 L470,40',stroke:'rgba(0,0,0,0)','stroke-width':30,fill:'none'},s),'sen');
+  // 節：写真の節の中心は (1500×1000 で) 約 (730,525) → 600×400 で (292,210)。矢印より上に重ねる
+  partHit(el('ellipse',Object.assign({cx:292, cy:210, rx:40, ry:28},hs),s),'fushi');
   const fb = el('g',{class:'hit'},s);
   el('rect',{x:170,y:410,width:260,height:42,rx:12,fill:'#8a5a2b'},fb);
   txt('下の面（木裏）を見る', 300, 438, {fill:'#fff','font-size':18}, fb);
