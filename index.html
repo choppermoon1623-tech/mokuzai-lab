@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>木材さわってラボ</title>
+<meta name="description" content="木材の各部の名前・重さ・繊維方向と強さ・乾燥による変形・木質材料を、さわって確かめる中学技術の教材">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fbf7ee; --panel:#fff; --bd:#e6dcc8; --ink:#1f2633; --sub:#4f5868;
+    --wood:#8a5a2b; --woodLite:#f6e6c8; --ok:#1d7f47; --okLite:#d6f0e0;
+    --water:#2459a6; --waterLite:#dce8f8; --ng:#c23b22; --ngLite:#fbdcd4; --mat:#6b3fb0; --matLite:#ece3fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{font-family:"Zen Maru Gothic","BIZ UDGothic","Hiragino Maru Gothic ProN",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-weight:500;line-height:1.6;}
+  button{font-family:inherit;cursor:pointer;color:inherit;}
+  header{background:linear-gradient(135deg,#7a4d22,#a8733c);color:#fff;padding:14px 16px 0;}
+  .hwrap{max-width:1100px;margin:0 auto;}
+  h1{font-size:clamp(22px,4vw,30px);font-weight:900;letter-spacing:.04em;}
+  h1 small{font-size:.55em;font-weight:700;opacity:.9;margin-left:.6em;}
+  nav{display:flex;gap:6px;overflow-x:auto;margin-top:10px;scrollbar-width:none;}
+  nav::-webkit-scrollbar{display:none;}
+  nav button{flex:none;border:none;background:rgba(255,255,255,.18);color:#fff;font-weight:900;font-size:16px;padding:10px 14px;border-radius:14px 14px 0 0;}
+  nav button[aria-selected="true"]{background:var(--bg);color:var(--wood);}
+  main{max-width:1100px;margin:0 auto;padding:16px;}
+  section.tab{display:none;} section.tab.on{display:block;}
+  h2{font-size:clamp(20px,3.2vw,26px);font-weight:900;margin-bottom:4px;}
+  .lead{color:var(--sub);font-size:16px;margin-bottom:12px;}
+  .two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start;}
+  @media (max-width:760px){.two{grid-template-columns:1fr;}}
+  .box{background:var(--panel);border:2px solid var(--bd);border-radius:18px;padding:14px;}
+  .stage svg{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .seg button,.btn{border:2px solid var(--bd);background:#fff;border-radius:12px;padding:8px 14px;font-weight:900;font-size:16px;}
+  .seg button[aria-pressed="true"]{background:var(--wood);border-color:var(--wood);color:#fff;}
+  .btn.main{background:var(--wood);border-color:var(--wood);color:#fff;}
+  .btn:disabled{opacity:.45;cursor:default;}
+  .info h3{font-size:24px;font-weight:900;color:var(--wood);}
+  .info h3 rt{font-size:.5em;}
+  .info p{font-size:17px;margin-top:6px;}
+  .hint{font-size:15px;color:var(--sub);}
+  .note{font-size:13px;color:var(--sub);margin-top:8px;}
+  .pill{display:inline-block;border-radius:999px;padding:2px 12px;font-weight:900;font-size:15px;}
+  .pill.ok{background:var(--okLite);color:var(--ok);} .pill.ng{background:var(--ngLite);color:var(--ng);}
+  .pill.w{background:var(--woodLite);color:var(--wood);} .pill.b{background:var(--waterLite);color:var(--water);}
+  .pill.m{background:var(--matLite);color:var(--mat);}
+  .hit{cursor:pointer;}
+  .hit:hover{filter:brightness(1.06);}
+  .sel{stroke:#ffb400 !important;stroke-width:6 !important;}
+  .chall{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+  .chall .q{font-size:20px;font-weight:900;}
+  .species{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin-bottom:12px;}
+  .species button{border:2px solid var(--bd);background:#fff;border-radius:14px;padding:8px;text-align:left;display:flex;gap:8px;align-items:center;font-weight:900;font-size:16px;}
+  .species button i{width:22px;height:22px;border-radius:6px;flex:none;border:1px solid rgba(0,0,0,.15);}
+  .species button[aria-pressed="true"]{border-color:var(--wood);box-shadow:0 0 0 3px var(--woodLite);}
+  .big{font-size:30px;font-weight:900;color:var(--wood);}
+  .range{width:100%;accent-color:var(--wood);height:32px;}
+  label.rl{display:block;font-weight:900;margin-top:8px;}
+  .bars .bar{display:grid;grid-template-columns:88px 1fr 46px;gap:8px;align-items:center;font-size:14px;font-weight:700;margin:3px 0;}
+  .bars .bar div{height:14px;border-radius:7px;background:var(--woodLite);position:relative;overflow:hidden;}
+  .bars .bar div span{position:absolute;inset:0 auto 0 0;background:var(--wood);border-radius:7px;}
+  .bars .bar.on{color:var(--wood);}
+  .bars .bar.on div span{background:#e08a1e;}
+  .meter{display:grid;grid-template-columns:120px 1fr 40px;gap:8px;align-items:center;font-weight:900;margin:6px 0;}
+  .meter div{height:18px;background:#eee;border-radius:9px;overflow:hidden;}
+  .meter div span{display:block;height:100%;background:var(--mat);transition:width .4s;}
+  .layers{display:flex;flex-direction:column;gap:6px;margin:10px 0;}
+  .layers button{border:2px solid var(--bd);background:#fff;border-radius:10px;padding:6px 10px;font-weight:900;text-align:left;font-size:16px;}
+  .quiz .qq{font-size:19px;font-weight:900;margin:14px 0 8px;}
+  .quiz .ch{display:flex;flex-wrap:wrap;gap:8px;}
+  .quiz .ch button{border:2px solid var(--bd);background:#fff;border-radius:12px;padding:8px 14px;font-weight:900;font-size:16px;}
+  .quiz .ch button.ok{background:var(--okLite);border-color:var(--ok);color:var(--ok);}
+  .quiz .ch button.ng{background:#f1f1f1;color:#999;text-decoration:line-through;}
+  .quiz .ex{font-size:15px;color:var(--sub);margin-top:6px;display:none;}
+  .quiz .ex.on{display:block;}
+  footer{max-width:1100px;margin:10px auto 30px;padding:0 16px;font-size:13px;color:var(--sub);}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important;}}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <h1>木材さわってラボ<small>技術 1年　材料と加工の技術</small></h1>
+  <nav role="tablist" id="tabs">
+    <button role="tab" data-t="parts" aria-selected="true">① 名前</button>
+    <button role="tab" data-t="weight">② 重さ</button>
+    <button role="tab" data-t="strength">③ 強さ</button>
+    <button role="tab" data-t="dry">④ 乾燥</button>
+    <button role="tab" data-t="board">⑤ 木質材料</button>
+    <button role="tab" data-t="quiz">⑥ チェック</button>
+  </nav>
+</div></header>
+
+<main>
+<!-- ① 名前 -->
+<section class="tab on" id="parts">
+  <h2>① 各部の名前をさわって調べよう</h2>
+  <p class="lead">図の部分をタップすると、名前と説明が出ます。</p>
+  <div class="seg" id="pView">
+    <button aria-pressed="true" data-v="cut">丸太の切り口</button>
+    <button aria-pressed="false" data-v="board">板</button>
+    <button aria-pressed="false" data-v="take">木取り</button>
+  </div>
+  <div class="two">
+    <div class="box stage" id="pStage"></div>
+    <div>
+      <div class="box info" id="pInfo"><h3>どこかをタップ</h3><p class="hint">切り口・板・木取りの3つの図があります。</p></div>
+      <div class="box chall" style="margin-top:12px;">
+        <button class="btn main" id="chStart">名前あてチャレンジ</button>
+        <span class="q" id="chQ"></span><span id="chScore" class="pill w" hidden></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ② 重さ -->
+<section class="tab" id="weight">
+  <h2>② 木の種類で、重さはどれだけちがう？</h2>
+  <p class="lead">木を選ぶと、10cm角（1辺10cmの立方体）の重さと、水に入れたときの様子がわかります。</p>
+  <div class="species" id="spList"></div>
+  <div class="two">
+    <div class="box stage"><svg id="tank" viewBox="0 0 560 380"></svg></div>
+    <div class="box info" id="spInfo"></div>
+  </div>
+  <div class="two" style="margin-top:16px;">
+    <div class="box">
+      <b>細胞の断面モデル（イメージ）</b>
+      <div class="stage"><svg id="cells" viewBox="0 0 300 200"></svg></div>
+      <p class="hint" id="cellTxt"></p>
+    </div>
+    <div class="box bars" id="spBars"><b>1cm³あたりの重さ（g）くらべ</b></div>
+  </div>
+  <p class="note">数値は乾いた木材（気乾状態）の一般的なめやすです。同じ樹種でも木ごとにちがいます。細胞の壁そのものは、どの木でも1cm³あたり約1.5gです。</p>
+</section>
+
+<!-- ③ 強さ -->
+<section class="tab" id="strength">
+  <h2>③ 繊維方向で、強さはどう変わる？</h2>
+  <p class="lead">繊維（木目）の向きを決めてから、おもりを1つずつのせてみよう。何個で折れるかな？</p>
+  <div class="two">
+    <div class="box stage">
+      <svg id="beam" viewBox="0 0 800 330"></svg>
+      <svg id="beamTop" viewBox="0 0 800 120"></svg>
+    </div>
+    <div class="box">
+      <label class="rl" for="ang">木目の向き：<span id="angTxt"></span></label>
+      <input type="range" class="range" id="ang" min="0" max="90" step="5" value="0">
+      <div class="seg" style="margin-top:6px;">
+        <button class="btn" data-a="0">A 渡る向き(0°)</button>
+        <button class="btn" data-a="20">ななめ(20°)</button>
+        <button class="btn" data-a="90">B 直角(90°)</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn main" id="addW">＋ おもりをのせる</button>
+        <button class="btn" id="resetW">やり直す</button>
+      </div>
+      <p class="big" id="wCount" style="margin-top:10px;">おもり 0 個</p>
+      <p id="wMsg" style="font-size:17px;"></p>
+      <div id="wLog" class="hint" style="margin-top:8px;"></div>
+    </div>
+  </div>
+  <p class="note">折れるおもりの数は、木材の強さのちがいを分かりやすくしたモデル（めやす）です。木目が少しななめになるだけで、ぐっと弱くなります。</p>
+</section>
+
+<!-- ④ 乾燥 -->
+<section class="tab" id="dry">
+  <h2>④ 乾くと、板はどう変形する？</h2>
+  <p class="lead">左の丸太の上で、板（オレンジ）をドラッグして動かそう。スライダーで乾かすと、右に変形した形が出ます。</p>
+  <div class="seg" id="dPreset">
+    <button class="btn" data-p="itame">板目材</button>
+    <button class="btn" data-p="masa">まさ目材</button>
+    <button class="btn" data-p="shin">心持ち材（柱）</button>
+    <button class="btn" id="dRot">↻ 板を90°回す</button>
+  </div>
+  <div class="two">
+    <div class="box stage"><svg id="logD" viewBox="0 0 600 600"></svg></div>
+    <div class="box">
+      <div class="stage"><svg id="shape" viewBox="-200 -150 400 300"></svg></div>
+      <label class="rl" for="dryR">乾燥：<span id="dryTxt">0%</span></label>
+      <input type="range" class="range" id="dryR" min="0" max="100" value="100">
+      <p id="dKind" style="font-size:18px;font-weight:900;"></p>
+      <p id="dMsg" style="font-size:16px;"></p>
+    </div>
+  </div>
+  <div class="box bars" style="margin-top:16px;">
+    <b>乾燥で縮む割合のめやす（方向によるちがい）</b>
+    <div class="bar"><b>接線方向</b><div><span style="width:100%"></span></div><b>10</b></div>
+    <div class="bar"><b>半径方向</b><div><span style="width:50%"></span></div><b>5</b></div>
+    <div class="bar"><b>繊維方向</b><div><span style="width:7.5%"></span></div><b>0.5〜1</b></div>
+  </div>
+  <p class="note">見やすくするため、変形の大きさは実際の約3倍にしています。縮み方の比（接線：半径＝2：1）はそのままです。</p>
+</section>
+
+<!-- ⑤ 木質材料 -->
+<section class="tab" id="board">
+  <h2>⑤ 板を重ねて、木質材料をつくろう</h2>
+  <p class="lead">層をタップすると、その層の繊維の向きが変わります。どんな重ね方が、どの方向にも強く、反りにくいかな？</p>
+  <div class="seg" id="nLay">
+    <button aria-pressed="true" data-n="3">3枚</button>
+    <button aria-pressed="false" data-n="5">5枚</button>
+    <button aria-pressed="false" data-n="7">7枚</button>
+  </div>
+  <div class="two">
+    <div class="box stage"><svg id="stack" viewBox="0 0 560 360"></svg></div>
+    <div class="box">
+      <div class="layers" id="layBtns"></div>
+      <div class="meter"><span>長さ方向の強さ</span><div><span id="mX"></span></div><b id="vX"></b></div>
+      <div class="meter"><span>幅方向の強さ</span><div><span id="mY"></span></div><b id="vY"></b></div>
+      <div class="meter"><span>反りにくさ</span><div><span id="mW"></span></div><b id="vW"></b></div>
+      <p id="bKind" style="font-size:18px;font-weight:900;margin-top:8px;"></p>
+      <p id="bMsg" style="font-size:16px;"></p>
+    </div>
+  </div>
+  <p class="note">強さは、木材を繊維に直角な向きに引っぱると繊維方向の約20分の1の力で切れるとして、層の数から計算したモデル（めやす）です。</p>
+</section>
+
+<!-- ⑥ チェック -->
+<section class="tab quiz" id="quiz">
+  <h2>⑥ チェッククイズ</h2>
+  <p class="lead">わかったことを確かめよう。まちがえたら、もう一度選べます。</p>
+  <div id="qList"></div>
+  <p class="big" id="qScore" style="margin-top:16px;"></p>
+</section>
+</main>
+<footer>教科書「技術のとびら」p.32〜33（木材の特性）の内容にそって作った学習用ページです。登録不要・通信なしで動きます。</footer>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs={}, parent) => { const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; };
+const txt = (s, x, y, attrs={}, parent) => { const t = el('text', Object.assign({x, y, 'font-size':20, 'font-weight':900, fill:'#1f2633', 'text-anchor':'middle', 'font-family':'Zen Maru Gothic, BIZ UDGothic, sans-serif'}, attrs), parent); t.textContent = s; return t; };
+function svgPoint(svg, e){ const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+
+/* ---------- タブ ---------- */
+const tabs = [...document.querySelectorAll('#tabs button')];
+tabs.forEach(b => b.onclick = () => {
+  tabs.forEach(x => x.setAttribute('aria-selected', x===b));
+  document.querySelectorAll('section.tab').forEach(s => s.classList.toggle('on', s.id===b.dataset.t));
+  history.replaceState(null, '', '#'+b.dataset.t);
+});
+addEventListener('load', () => { const t = tabs.find(b => '#'+b.dataset.t === location.hash); if(t) t.click(); });
+
+/* =========================================================
+   ① 名前
+   ========================================================= */
+const PARTS = {
+  pith:   {n:'髄', r:'ずい', d:'丸太の中心。木が育ち始めたところ。やわらかく、割れやすい。'},
+  heart:  {n:'心材', r:'しんざい', d:'中心に近い、色のこい部分。細胞がはたらきを終えた部分で、くさりにくく、虫にも強い。'},
+  sap:    {n:'辺材', r:'へんざい', d:'樹皮に近い、色のうすい部分。水や養分を運んでいる。心材より、くさりやすい。'},
+  bark:   {n:'樹皮', r:'じゅひ', d:'いちばん外側の皮。木を外から守っている。'},
+  ring:   {n:'年輪', r:'ねんりん', d:'1年間に成長した部分。春〜夏の「早材」（色がうすい）と、夏の終わり〜秋の「晩材」（色がこい）が1組で1年分。'},
+  koguchi:{n:'こぐち', r:'木口', d:'繊維方向に直角に切った面。年輪が見える。水を吸いやすく、削りにくい。'},
+  koba:   {n:'こば', r:'木端', d:'板の細長い側面。繊維方向に平行な、せまい面。'},
+  kiomote:{n:'木表', r:'きおもて', d:'板目材の、樹皮に近い側の面。こぐちの年輪の弧が、こちらにふくらんで見える。乾くとこちら側がへこむように反る。'},
+  kiura:  {n:'木裏', r:'きうら', d:'板目材の、中心（髄）に近い側の面。'},
+  fushi:  {n:'節', r:'ふし', d:'枝のあと。かたく、割れたり抜けたりしやすいので、材料取りで注意する。'},
+  sen:    {n:'繊維方向', r:'せんいほうこう', d:'木の細胞（管）が並んでいる向き＝木が伸びた向き。この向きに強く、乾燥でもほとんど縮まない。'},
+  masa:   {n:'まさ目材', r:'まさめざい', d:'年輪に直角になるように（中心を通るように）切った板。木目がまっすぐ平行で、反りや変形が少ない。'},
+  itame:  {n:'板目材', r:'いためざい', d:'年輪に接するように（中心からはずれた所で）切った板。山形の木目が出る。乾くと木表側に反りやすい。'},
+};
+let pView = 'cut', chTarget = null, chOk = 0, chN = 0;
+const pStage = $('#pStage');
+function partHit(node, key){
+  node.classList.add('hit'); node.dataset.p = key;
+  node.addEventListener('click', ev => { ev.stopPropagation(); pick(key, node); });
+  return node;
+}
+function pick(key, node){
+  pStage.querySelectorAll('.sel').forEach(x => x.classList.remove('sel'));
+  pStage.querySelectorAll(`[data-p="${key}"]`).forEach(x => { if(x.getAttribute('stroke')!==null || x.tagName!=='g') x.classList.add('sel'); });
+  const P = PARTS[key];
+  let res = '';
+  if(chTarget){
+    chN++;
+    if(key===chTarget){ chOk++; res = '<span class="pill ok">正解！</span> '; }
+    else res = `<span class="pill ng">ざんねん</span> そこは「${P.n}」。「${PARTS[chTarget].n}」をさがそう。 `;
+    $('#chScore').hidden = false; $('#chScore').textContent = `${chOk} / ${chN}`;
+    if(key===chTarget) setTimeout(nextChallenge, 900);
+  }
+  $('#pInfo').innerHTML = `${res}<h3><ruby>${P.n}<rt>${P.r}</rt></ruby></h3><p>${P.d}</p>`;
+}
+function drawCut(){
+  const s = el('svg', {viewBox:'0 0 600 540'});
+  const cx=300, cy=260;
+  partHit(el('circle',{cx,cy,r:240,fill:'#6b4a2e',stroke:'#4a321d','stroke-width':3},s),'bark');
+  partHit(el('circle',{cx,cy,r:222,fill:'#f1d9a6',stroke:'#c9a56a','stroke-width':2},s),'sap');
+  partHit(el('circle',{cx,cy,r:150,fill:'#d49a5a',stroke:'#a8743c','stroke-width':2},s),'heart');
+  for(let r=26; r<222; r+=20){
+    const ring = el('circle',{cx,cy,r,fill:'none',stroke: r<150 ? '#9a6532' : '#c69654','stroke-width':3},s);
+    ring.style.pointerEvents='none';
+    const hitR = el('circle',{cx,cy,r,fill:'none',stroke:'transparent','stroke-width':9},s);
+    partHit(hitR,'ring'); hitR.setAttribute('stroke','transparent');
+  }
+  partHit(el('circle',{cx,cy,r:9,fill:'#5a3a1c',stroke:'#3b2510','stroke-width':2},s),'pith');
+  txt('タップしてみよう', 300, 532, {'font-size':18, fill:'#4f5868'}, s);
+  return s;
+}
+function drawBoard(flipped){
+  const s = el('svg', {viewBox:'0 0 600 440'});
+  // 斜め見下ろしの板（左がこぐち）
+  const A=[90,170], B=[470,110], C=[540,170], D=[160,230], h=60;
+  const top = `M${A}L${B}L${C}L${D}Z`;
+  const front = `M${D}L${C}L${C[0]},${C[1]+h}L${D[0]},${D[1]+h}Z`;
+  const end = `M${A}L${D}L${D[0]},${D[1]+h}L${A[0]},${A[1]+h}Z`;
+  partHit(el('path',{d:top, fill: flipped ? '#e9c88e' : '#f3d9a4', stroke:'#8a5a2b','stroke-width':3},s), flipped ? 'kiura' : 'kiomote');
+  // 板目模様（たけのこ形）
+  const g = el('g',{fill:'none',stroke:'#c98f4a','stroke-width':2.5,'pointer-events':'none'},s);
+  for(let i=0;i<4;i++){
+    const off=i*14;
+    el('path',{d:`M${130+off*0.3},${185-off*0.2} Q ${300},${160-off*0.9} ${470-off*0.5},${150+off*0.15} Q ${300},${190+off*0.3} ${130+off*0.3},${200+off*0.2}`},g);
+  }
+  partHit(el('path',{d:front, fill:'#dcb57a', stroke:'#8a5a2b','stroke-width':3},s),'koba');
+  partHit(el('path',{d:end, fill:'#e6c48c', stroke:'#8a5a2b','stroke-width':3},s),'koguchi');
+  // こぐちの年輪（弧の中心は髄＝木裏側。木表側にふくらむ）
+  const ep = (u,v) => [A[0]+u*(D[0]-A[0]), A[1]+u*(D[1]-A[1])+v*h];
+  const cp = el('clipPath',{id:'kgclip'}, el('defs',{},s)); el('path',{d:end},cp);
+  const ga = el('g',{fill:'none',stroke:'#a8743c','stroke-width':2.5,'pointer-events':'none','clip-path':'url(#kgclip)'},s);
+  for(let i=0;i<5;i++){
+    const v = flipped ? 0.85 - i*0.22 : 0.15 + i*0.22, bulge = flipped ? 0.5 : -0.5;
+    const p0=ep(-0.05,v+(flipped?-0.25:0.25)), p1=ep(1.05,v+(flipped?-0.25:0.25)), pc=ep(0.5,v+(flipped?-0.25:0.25)+bulge);
+    el('path',{d:`M${p0} Q${pc} ${p1}`},ga);
+  }
+  partHit(el('ellipse',{cx:330,cy:165,rx:16,ry:10,fill:'#7b4a1e',stroke:'#4a2c10','stroke-width':2},s),'fushi');
+  // 繊維方向の矢印
+  const arr = el('g',{},s);
+  el('path',{d:'M180,320 L520,265',stroke:'#1d7f47','stroke-width':6,fill:'none'},arr);
+  el('path',{d:'M520,265 l-22,-6 l8,20z',fill:'#1d7f47'},arr);
+  el('path',{d:'M180,320 l22,6 l-8,-20z',fill:'#1d7f47'},arr);
+  const hitA = el('path',{d:'M180,320 L520,265',stroke:'transparent','stroke-width':30,fill:'none'},s);
+  partHit(hitA,'sen');
+  txt(flipped ? '上の面＝木裏（裏返し中）' : '上の面＝木表', 300, 60, {'font-size':20, fill:'#4f5868'}, s);
+  const fb = el('g',{class:'hit'},s);
+  el('rect',{x:220,y:370,width:160,height:46,rx:12,fill:'#8a5a2b'},fb);
+  txt('板を裏返す', 300, 401, {fill:'#fff'}, fb);
+  fb.addEventListener('click', ev => { ev.stopPropagation(); boardFlipped=!boardFlipped; render(); });
+  return s;
+}
+let boardFlipped = false;
+function drawTake(){
+  const s = el('svg', {viewBox:'0 0 600 540'});
+  const cx=300, cy=260;
+  el('circle',{cx,cy,r:240,fill:'#6b4a2e'},s);
+  el('circle',{cx,cy,r:222,fill:'#f1d9a6'},s);
+  el('circle',{cx,cy,r:150,fill:'#d49a5a'},s);
+  for(let r=26;r<222;r+=20) el('circle',{cx,cy,r,fill:'none',stroke:r<150?'#9a6532':'#c69654','stroke-width':3},s);
+  el('circle',{cx,cy,r:9,fill:'#5a3a1c'},s);
+  partHit(el('rect',{x:282,y:50,width:36,height:200,fill:'rgba(29,127,71,.35)',stroke:'#1d7f47','stroke-width':4},s),'masa');
+  partHit(el('rect',{x:120,y:330,width:280,height:40,fill:'rgba(224,138,30,.4)',stroke:'#c26a00','stroke-width':4},s),'itame');
+  txt('緑とオレンジの板をタップ', 300, 532, {'font-size':18, fill:'#4f5868'}, s);
+  return s;
+}
+function render(){
+  pStage.innerHTML = '';
+  pStage.appendChild(pView==='cut' ? drawCut() : pView==='board' ? drawBoard(boardFlipped) : drawTake());
+}
+document.querySelectorAll('#pView button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#pView button').forEach(x => x.setAttribute('aria-pressed', x===b));
+  pView = b.dataset.v; render(); if(chTarget) nextChallenge(true);
+});
+const VIEWPARTS = {cut:['pith','heart','sap','bark','ring'], board:['koguchi','koba','kiomote','fushi','sen'], take:['masa','itame']};
+function nextChallenge(keep){
+  const list = VIEWPARTS[pView];
+  let k; do { k = list[Math.floor(Math.random()*list.length)]; } while(list.length>1 && k===chTarget && !keep);
+  if(pView==='board' && boardFlipped){ boardFlipped=false; render(); }
+  chTarget = k;
+  $('#chQ').textContent = `「${PARTS[k].n}」はどこ？`;
+}
+$('#chStart').onclick = () => { chOk=0; chN=0; $('#chScore').hidden=true; $('#chStart').textContent='次の問題'; nextChallenge(); };
+render();
+
+/* =========================================================
+   ② 重さ
+   ========================================================= */
+const SP = [
+  {n:'キリ', d:0.29, k:'広葉樹', c:'#efe0c4', u:'たんす・げた・箱', f:'日本でいちばん軽い木の1つ。湿気を通しにくく、くるいが少ない。'},
+  {n:'スギ', d:0.38, k:'針葉樹', c:'#eac9a0', u:'柱・板・天井', f:'まっすぐ育ち、やわらかく加工しやすい。日本で最も多く植えられている木。'},
+  {n:'ヒノキ', d:0.44, k:'針葉樹', c:'#f3dfb6', u:'柱・風呂おけ・まな板', f:'よい香りとつやがあり、水や腐れに強い。'},
+  {n:'アカマツ', d:0.52, k:'針葉樹', c:'#e8c08a', u:'梁（はり）・床', f:'やにが多く、ねばり強い。'},
+  {n:'ケヤキ', d:0.62, k:'広葉樹', c:'#d9a66b', u:'寺社の建物・家具・うす', f:'木目が美しく、強くて丈夫。'},
+  {n:'ミズナラ', d:0.68, k:'広葉樹', c:'#d8b685', u:'家具・床・洋酒のたる', f:'かたく、水を通しにくい。'},
+  {n:'シラカシ', d:0.83, k:'広葉樹', c:'#c9b28f', u:'かんなの台・道具の柄・木刀', f:'重くかたく、すり減りにくい。加工はしにくい。'},
+  {n:'リグナムバイタ', d:1.2, k:'広葉樹（外国産）', c:'#7d6a3c', u:'船のスクリューの軸受け', f:'世界でもとくに重い木の1つ。水に沈む。'},
+];
+let spCur = 1;
+const spList = $('#spList');
+SP.forEach((s,i) => {
+  const b = document.createElement('button');
+  b.innerHTML = `<i style="background:${s.c}"></i>${s.n}`;
+  b.onclick = () => { spCur=i; drawWeight(); };
+  spList.appendChild(b);
+});
+const bars = $('#spBars');
+SP.forEach((s,i) => { const d=document.createElement('div'); d.className='bar'; d.innerHTML=`<span>${s.n}</span><div><span style="width:${s.d/1.25*100}%"></span></div><span>${s.d.toFixed(2)}</span>`; bars.appendChild(d); });
+let floatY = null;
+function drawWeight(){
+  const s = SP[spCur];
+  [...spList.children].forEach((b,i) => b.setAttribute('aria-pressed', i===spCur));
+  [...bars.querySelectorAll('.bar')].forEach((b,i) => b.classList.toggle('on', i===spCur));
+  const g = Math.round(s.d*1000);
+  $('#spInfo').innerHTML = `<h3>${s.n} <span class="pill ${s.k.startsWith('針')?'ok':'w'}">${s.k}</span></h3>
+    <p>10cm角の重さ　<span class="big">約${g}g</span></p>
+    <p>1cm³あたり 約${s.d}g ／ 水は1cm³あたり1g</p>
+    <p><b>使い道：</b>${s.u}</p><p>${s.f}</p>
+    <p>${s.d<1 ? `<span class="pill b">水に浮く</span> 体積の約${Math.round(s.d*100)}%が水にしずむ` : '<span class="pill ng">水に沈む</span> 水より重い'}</p>`;
+  // 水そう
+  const t = $('#tank'); t.innerHTML='';
+  el('rect',{x:60,y:60,width:440,height:300,rx:10,fill:'#f4f8fd',stroke:'#7a8aa0','stroke-width':4},t);
+  const wl = 130;
+  el('rect',{x:63,y:wl,width:434,height:227,fill:'#9cc3ec','fill-opacity':.65},t);
+  const size = 120, x = 220;
+  const target = s.d>=1 ? 357-size : wl - size + size*s.d;
+  if(floatY===null) floatY = target;
+  const blk = el('g',{},t);
+  const r = el('rect',{x, y:0, width:size, height:size, rx:6, fill:s.c, stroke:'#5a3a1c','stroke-width':3},blk);
+  for(let i=1;i<5;i++) el('line',{x1:x+6,y1:i*size/5,x2:x+size-6,y2:i*size/5,stroke:'rgba(90,58,28,.35)','stroke-width':2},blk);
+  el('rect',{x:63,y:wl,width:434,height:227,fill:'#5d9ad8','fill-opacity':.28,'pointer-events':'none'},t);
+  el('line',{x1:63,y1:wl,x2:497,y2:wl,stroke:'#2459a6','stroke-width':3},t);
+  txt('水面', 92, wl-8, {'font-size':18, fill:'#2459a6'}, t);
+  txt(`${s.n}（10cm角）`, 280, 40, {'font-size':22}, t);
+  const start = floatY, t0 = performance.now();
+  (function anim(now){
+    const p = Math.min(1,(now-t0)/700), e = 1-Math.pow(1-p,3);
+    floatY = start + (target-start)*e + (p<1 ? 0 : 0);
+    blk.setAttribute('transform', `translate(0,${floatY})`);
+    if(p<1) requestAnimationFrame(anim);
+  })(t0);
+  // 細胞
+  const c = $('#cells'); c.innerHTML='';
+  const por = Math.max(0, 1 - s.d/1.5);                 // すき間の割合
+  const cell = 40, inner = cell*Math.sqrt(por);          // 空洞の一辺
+  el('rect',{x:0,y:0,width:300,height:200,fill:'#a8743c'},c);
+  for(let yy=0; yy<5; yy++) for(let xx=0; xx<8; xx++){
+    const ox = xx*cell - 10 + (yy%2)*6, oy = yy*cell;
+    if(inner>1) el('rect',{x:ox+(cell-inner)/2, y:oy+(cell-inner)/2, width:inner, height:inner, rx:inner*0.25, fill:'#f7efe0'},c);
+  }
+  $('#cellTxt').innerHTML = `すき間（空気）の割合 <b>約${Math.round(por*100)}%</b>。茶色＝細胞の壁、白＝すき間。${por>0.65?'すき間が多いので軽い。':por>0.4?'':'壁があつく、すき間が少ないので重い。'}`;
+}
+drawWeight();
+
+/* =========================================================
+   ③ 強さ
+   ========================================================= */
+let ang = 0, load = 0, broken = false;
+const capOf = a => { const r=a*Math.PI/180, P=12, Q=1; return P*Q/(P*Math.sin(r)**2 + Q*Math.cos(r)**2); };
+const logs = [];
+function drawBeam(){
+  const s = $('#beam'); s.innerHTML='';
+  const cap = capOf(ang);
+  el('rect',{x:70,y:220,width:80,height:90,fill:'#9aa0a8'},s);
+  el('rect',{x:650,y:220,width:80,height:90,fill:'#9aa0a8'},s);
+  const d = broken ? 0 : Math.min(1, load/(cap+1))*50;
+  const y0 = 190, th = 30;
+  if(!broken){
+    let top='', bot='';
+    for(let x=40; x<=760; x+=10){
+      const u = Math.min(1,Math.max(0,(x-110)/580));
+      const off = (x<110||x>690) ? -d*0.15*Math.min(1,Math.abs(x<110?110-x:x-690)/70) : d*Math.sin(Math.PI*u);
+      top += (x===40?'M':'L')+x+','+(y0+off);
+      bot = 'L'+x+','+(y0+th+off) + bot;
+    }
+    el('path',{d: top + bot.replace(/^L/,'L') + 'Z', fill:'#f3d9a4', stroke:'#8a5a2b','stroke-width':3},s);
+    // 重り
+    for(let i=0;i<load;i++){
+      const yy = y0 + d - 26 - i*26;
+      el('rect',{x:370,y:yy,width:60,height:24,rx:4,fill:'#4f5868',stroke:'#2a2f38','stroke-width':2},s);
+    }
+  } else {
+    // 割れて落ちた2つの板
+    el('path',{d:'M40,190 L400,190 L380,220 L40,220Z',fill:'#f3d9a4',stroke:'#8a5a2b','stroke-width':3,transform:'rotate(18 110 205)'},s);
+    el('path',{d:'M410,190 L760,190 L760,220 L390,220Z',fill:'#f3d9a4',stroke:'#8a5a2b','stroke-width':3,transform:'rotate(-18 690 205)'},s);
+    txt('バキッ！', 400, 120, {'font-size':40, fill:'#c23b22'}, s);
+  }
+  // 上から見た板（木目の向き）
+  const t = $('#beamTop'); t.innerHTML='';
+  const clip = el('clipPath',{id:'bclip'},el('defs',{},t));
+  el('rect',{x:40,y:20,width:720,height:70,rx:4},clip);
+  el('rect',{x:40,y:20,width:720,height:70,rx:4,fill:'#f3d9a4'},t);
+  const g = el('g',{'clip-path':'url(#bclip)',stroke:'#c98f4a','stroke-width':3},t);
+  const r = ang*Math.PI/180, dx=Math.cos(r), dy=Math.sin(r);
+  for(let k=-900;k<900;k+=22){
+    const nx=-dy, ny=dx; const cx=400+nx*k, cy=55+ny*k;
+    el('line',{x1:cx-dx*900,y1:cy-dy*900,x2:cx+dx*900,y2:cy+dy*900},g);
+  }
+  if(broken){
+    const cx = ang===0 ? 0 : dx, cy = ang===0 ? 1 : dy, L = ang===0 ? 35 : 35/Math.max(Math.abs(cy),0.2);
+    el('line',{x1:400-cx*L, y1:55-cy*L, x2:400+cx*L, y2:55+cy*L, stroke:'#c23b22','stroke-width':5,'stroke-dasharray':'8 6','clip-path':'url(#bclip)'},t);
+  }
+  el('rect',{x:40,y:20,width:720,height:70,rx:4,fill:'none',stroke:'#8a5a2b','stroke-width':3},t);
+  txt('上から見た板（線が木目）', 400, 114, {'font-size':16, fill:'#4f5868'}, t);
+  $('#angTxt').textContent = ang===0 ? '0°（渡る向きと同じ＝A）' : ang===90 ? '90°（渡る向きと直角＝B）' : ang+'°（ななめ）';
+  $('#wCount').textContent = `おもり ${load} 個`;
+  $('#addW').disabled = broken;
+}
+function addW(){
+  if(broken) return;
+  load++;
+  const cap = capOf(ang);
+  if(load > Math.floor(cap+1e-9)){
+    broken = true;
+    const held = load-1;
+    $('#wMsg').innerHTML = `<span class="pill ng">${load}個目で折れた</span> ${ang>=60 ? '木目にそって、パキッと割れた！繊維と繊維の間ははがれやすい。' : ang>0 ? 'ななめの木目にそって割れた。少しななめなだけで弱くなる。' : '繊維がたくさん支えていたので、なかなか折れなかった！'}`;
+    logs.push(`木目 ${ang}° → ${held}個までたえた`);
+    $('#wLog').innerHTML = '<b>記録</b><br>' + logs.slice(-6).join('<br>');
+  } else {
+    $('#wMsg').textContent = load > cap*0.7 ? 'みしみし…そろそろ限界かも？' : 'まだだいじょうぶ。';
+  }
+  drawBeam();
+}
+function resetW(){ load=0; broken=false; $('#wMsg').textContent=''; drawBeam(); }
+$('#addW').onclick = addW; $('#resetW').onclick = resetW;
+$('#ang').oninput = e => { ang = +e.target.value; resetW(); };
+document.querySelectorAll('#strength [data-a]').forEach(b => b.onclick = () => { ang=+b.dataset.a; $('#ang').value=ang; resetW(); });
+drawBeam();
+
+/* =========================================================
+   ④ 乾燥
+   ========================================================= */
+const LC = {x:300,y:300}, LR = 270;
+let bd = {x:300, y:150, w:300, h:56, rot:0};  // 板（中心・幅・厚さ・回転）
+let dry = 1;
+const SH = {t:0.10*3, r:0.05*3};             // 接線・半径の縮み（3倍に強調）
+function boardCorners(b){
+  const r=b.rot*Math.PI/180, c=Math.cos(r), s=Math.sin(r);
+  return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v]) => [b.x + c*u*b.w/2 - s*v*b.h/2, b.y + s*u*b.w/2 + c*v*b.h/2]);
+}
+function containsPith(b){
+  const r=-b.rot*Math.PI/180, dx=LC.x-b.x, dy=LC.y-b.y;
+  const u = dx*Math.cos(r)-dy*Math.sin(r), v = dx*Math.sin(r)+dy*Math.cos(r);
+  return Math.abs(u)<b.w/2 && Math.abs(v)<b.h/2;
+}
+function perimeter(b, n=40){
+  const C = boardCorners(b), pts=[];
+  for(let i=0;i<4;i++){ const a=C[i], z=C[(i+1)%4]; for(let k=0;k<n;k++){ const t=k/n; pts.push([a[0]+(z[0]-a[0])*t, a[1]+(z[1]-a[1])*t]); } }
+  return pts;
+}
+function deform(b, f){
+  const pts = perimeter(b), er = SH.r*f, et = SH.t*f;
+  const thc = Math.atan2(b.y-LC.y, b.x-LC.x);
+  const pith = containsPith(b);
+  const out = []; let prev=null;
+  const wrap = a => { while(a>Math.PI) a-=2*Math.PI; while(a<-Math.PI) a+=2*Math.PI; return a; };
+  const center = pith ? -Math.PI/2 + Math.PI : thc;   // 心持ち材は割れ目を上に出す
+  pts.forEach(([x,y]) => {
+    const r = Math.hypot(x-LC.x, y-LC.y), th = wrap(Math.atan2(y-LC.y, x-LC.x) - center);
+    const r2 = r*(1-er), th2 = th*(1-et)/(1-er);
+    if(prev!==null && Math.abs(th-prev)>Math.PI) out.push([LC.x + 0, LC.y + 0, 'pith']);
+    prev = th;
+    out.push([LC.x + r2*Math.cos(th2+center), LC.y + r2*Math.sin(th2+center)]);
+  });
+  return out;
+}
+function kindOf(b){
+  if(containsPith(b)) return 'shin';
+  const r=b.rot*Math.PI/180, ax=[Math.cos(r),Math.sin(r)];
+  const rad=[b.x-LC.x, b.y-LC.y], L=Math.hypot(...rad)||1;
+  const cos = Math.abs((ax[0]*rad[0]+ax[1]*rad[1])/L);
+  return cos>0.82 ? 'masa' : cos<0.45 ? 'itame' : 'oi';
+}
+let drag=null;
+function drawDry(){
+  const s = $('#logD'); s.innerHTML='';
+  el('circle',{cx:LC.x,cy:LC.y,r:LR+14,fill:'#6b4a2e'},s);
+  el('circle',{cx:LC.x,cy:LC.y,r:LR,fill:'#f1d9a6'},s);
+  el('circle',{cx:LC.x,cy:LC.y,r:LR*0.62,fill:'#ddb07a'},s);
+  for(let r=24;r<LR;r+=22) el('circle',{cx:LC.x,cy:LC.y,r,fill:'none',stroke:'#b9864c','stroke-width':2.5},s);
+  el('circle',{cx:LC.x,cy:LC.y,r:7,fill:'#5a3a1c'},s);
+  const C = boardCorners(bd);
+  const poly = el('polygon',{points:C.map(p=>p.join(',')).join(' '), fill:'rgba(224,138,30,.45)', stroke:'#c26a00','stroke-width':4, style:'cursor:grab'},s);
+  poly.addEventListener('pointerdown', e => { const p=svgPoint(s,e); drag={dx:p.x-bd.x, dy:p.y-bd.y}; s.setPointerCapture(e.pointerId); });
+    drawShape();
+}
+(() => {
+  const s = $('#logD');
+  s.addEventListener('pointermove', e => {
+    if(!drag) return;
+    const p = svgPoint(s,e);
+    let nx=p.x-drag.dx, ny=p.y-drag.dy;
+    const d = Math.hypot(nx-LC.x, ny-LC.y), lim = LR - Math.max(bd.h,30)/2;
+    if(d>lim){ nx = LC.x+(nx-LC.x)*lim/d; ny = LC.y+(ny-LC.y)*lim/d; }
+    bd.x=nx; bd.y=ny; drawDry();
+  });
+  const end = () => drag=null;
+  s.addEventListener('pointerup', end); s.addEventListener('pointercancel', end);
+})();
+function drawShape(){
+  const s = $('#shape'); s.innerHTML='';
+  const k = kindOf(bd);
+  const sc = 300/Math.max(bd.w,bd.h,1) * 0.9;
+  const g = el('g',{transform:`scale(${sc}) rotate(${-bd.rot}) translate(${-bd.x},${-bd.y})`},s);
+  const orig = boardCorners(bd);
+  el('polygon',{points:orig.map(p=>p.join(',')).join(' '), fill:'none', stroke:'#8a5a2b','stroke-width':2/sc*1.5,'stroke-dasharray':`${6/sc} ${5/sc}`},g);
+  const D = deform(bd, dry);
+  // 割れ目（心持ち材）は外側から途中まで
+  let pts = D.map(p => p[2] ? [LC.x+(D[D.indexOf(p)-1][0]-LC.x)*0.55, LC.y+(D[D.indexOf(p)-1][1]-LC.y)*0.55] : p);
+  el('polygon',{points:pts.map(p=>p.join(',')).join(' '), fill:'rgba(243,217,164,.95)', stroke:'#8a5a2b','stroke-width':3/sc},g);
+  // 年輪（板の中に見える弧）
+  const ringG = el('g',{fill:'none',stroke:'rgba(168,116,60,.55)','stroke-width':1.6/sc},g);
+  // 木表・木裏ラベル
+  const lab = el('g',{},s);
+  if(k!=='shin'){
+    const r=bd.rot*Math.PI/180, nx=-Math.sin(r), ny=Math.cos(r);
+    const pA=[bd.x+nx*bd.h/2, bd.y+ny*bd.h/2], pB=[bd.x-nx*bd.h/2, bd.y-ny*bd.h/2];
+    const dA=Math.hypot(pA[0]-LC.x,pA[1]-LC.y), dB=Math.hypot(pB[0]-LC.x,pB[1]-LC.y);
+    if(Math.abs(dA-dB) > bd.h*0.4){
+      const outerIsA = dA>dB;
+      txt('木表', 0, outerIsA ? 120 : -100, {'font-size':22, fill:'#c23b22'}, lab);
+      txt('木裏', 0, outerIsA ? -100 : 120, {'font-size':22, fill:'#1f2633'}, lab);
+    }
+  } else txt('割れ', 0, -120, {'font-size':22, fill:'#c23b22'}, lab);
+  // 木表を常に下に表示しているわけではないので、上下は回転に合わせる（板の座標で表示）
+  $('#dryTxt').textContent = Math.round(dry*100)+'%';
+  const names = {itame:'板目材', masa:'まさ目材', oi:'追いまさ（ななめ）', shin:'心持ち材（髄をふくむ）'};
+  $('#dKind').textContent = 'この板は：' + names[k];
+  $('#dMsg').innerHTML = {
+    itame:'乾くと、<b class="cR" style="color:#c23b22">木表側がへこむように反る</b>。年輪にそった接線方向が、半径方向の約2倍縮むから。',
+    masa:'反りはほとんどなく、少しうすくなるだけ。<b style="color:#1d7f47">変形が少ない</b>。',
+    oi:'ひし形のようにゆがむ。',
+    shin:'外側（接線方向）がよく縮むので、<b style="color:#c23b22">表面が割れやすい</b>。柱に「背割り」を入れるのはこのため。'
+  }[k];
+}
+$('#dryR').oninput = e => { dry = e.target.value/100; drawShape(); };
+document.querySelectorAll('#dPreset [data-p]').forEach(b => b.onclick = () => {
+  const p = b.dataset.p;
+  if(p==='itame') bd = {x:300, y:120, w:300, h:56, rot:0};
+  if(p==='masa')  bd = {x:300, y:170, w:56, h:230, rot:0};
+  if(p==='shin')  bd = {x:300, y:300, w:220, h:220, rot:0};
+  drawDry();
+});
+$('#dRot').onclick = () => { const w=bd.w; bd.w=bd.h; bd.h=w; drawDry(); };
+drawDry();
+
+/* =========================================================
+   ⑤ 木質材料
+   ========================================================= */
+let lay = [0,1,0];   // 0 = 長さ方向, 1 = 幅方向
+function setN(n){ lay = Array.from({length:n}, (_,i) => i%2); drawStack(); }
+document.querySelectorAll('#nLay button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#nLay button').forEach(x => x.setAttribute('aria-pressed', x===b)); setN(+b.dataset.n);
+});
+function stiff(dir){
+  // 板の面に沿って引っぱったときの強さ（層ごとに、繊維方向なら1、直角なら0.05として平均）
+  return lay.reduce((a,v) => a + (v===dir ? 1 : 0.05), 0) / lay.length * 100;
+}
+function drawStack(){
+  const n = lay.length, s = $('#stack'); s.innerHTML='';
+  const th = Math.min(40, 220/n), W=300, Dp=110;
+  const x0=110, yBase = 60 + n*th + 40;
+  for(let i=0;i<n;i++){
+    const y = yBase - (i+1)*th;   // 下から積む
+    const L = lay[i];
+    const col = L===0 ? '#f3d9a4' : '#e6c08a';
+    const g = el('g',{class:'hit'},s);
+    el('path',{d:`M${x0},${y} l${Dp},${-Dp*0.45} l${W},0 l${-Dp},${Dp*0.45}z`, fill:col, stroke:'#8a5a2b','stroke-width':2},g);
+    el('path',{d:`M${x0},${y} l${W},0 l0,${th} l${-W},0z`, fill: L===0 ? '#e2b874' : '#d3a463', stroke:'#8a5a2b','stroke-width':2},g);
+    el('path',{d:`M${x0+W},${y} l${Dp},${-Dp*0.45} l0,${th} l${-Dp},${Dp*0.45}z`, fill:'#c99a5c', stroke:'#8a5a2b','stroke-width':2},g);
+    // 木目
+    const lg = el('g',{stroke:'#a8743c','stroke-width':1.6,'pointer-events':'none'},g);
+    if(L===0){ for(let k=1;k<6;k++){ const t=k/6; el('line',{x1:x0+Dp*t, y1:y-Dp*0.45*t, x2:x0+W+Dp*t, y2:y-Dp*0.45*t},lg); } el('line',{x1:x0+20,y1:y+th/2,x2:x0+W-20,y2:y+th/2},lg); }
+    else { for(let k=1;k<10;k++){ const t=k/10; el('line',{x1:x0+W*t, y1:y, x2:x0+W*t+Dp, y2:y-Dp*0.45},lg); } for(let k=1;k<15;k++){ el('circle',{cx:x0+W*k/15, cy:y+th/2, r:2.2, fill:'#8a5a2b'},lg); } }
+    g.addEventListener('click', () => { lay[i]=1-lay[i]; drawStack(); });
+  }
+  // 方向の矢印
+  el('path',{d:`M${x0},${yBase+28} l${W},0`,stroke:'#1f2633','stroke-width':3,'marker-end':''},s);
+  txt('← 長さ方向 →', x0+W/2, yBase+52, {'font-size':18}, s);
+  txt('層をタップで向きを変える', 280, 28, {'font-size':18, fill:'#4f5868'}, s);
+  // ボタン
+  const lb = $('#layBtns'); lb.innerHTML='';
+  for(let i=n-1;i>=0;i--){
+    const b = document.createElement('button');
+    b.textContent = `${n-i}層目：${lay[i]===0 ? '繊維 → 長さ方向' : '繊維 ↑ 幅方向'}`;
+    b.style.background = lay[i]===0 ? '#fff' : '#fbf1de';
+    b.onclick = () => { lay[i]=1-lay[i]; drawStack(); };
+    lb.appendChild(b);
+  }
+  const X = stiff(0), Y = stiff(1);
+  const sym = lay.every((v,i) => v===lay[n-1-i]);
+  const cross = lay.some(v=>v===1) && lay.some(v=>v===0);
+  const warp = (sym ? 55 : 15) + (cross ? 40 : 0) + (lay.every(v=>v===lay[0]) ? 20 : 0);
+  const W2 = Math.min(100, warp);
+  [['mX','vX',X],['mY','vY',Y],['mW','vW',W2]].forEach(([m,v,val]) => { $('#'+m).style.width = val+'%'; $('#'+v).textContent = Math.round(val); });
+  let kind, msg;
+  const alt = lay.every((v,i) => i===0 || v!==lay[i-1]);
+  if(lay.every(v=>v===lay[0])){ kind='集成材のつくり方'; msg='全部の層の繊維がそろっているので、その方向にはとても強い。長い柱や梁に向いている。でも、直角の方向には弱いまま。'; }
+  else if(alt && sym){ kind='合板のつくり方'; msg='繊維が1枚ごとに直交しているので、1枚の板（長さ100：幅5）に比べて、方向による強さのちがいがずっと小さい。表と裏がつり合っているので反りにくい。'; }
+  else if(!sym){ kind='つり合っていない重ね方'; msg='表側と裏側で重ね方がちがうので、乾いたときに反りやすい。合板は「真ん中をはさんで対称」に重ねる。'; }
+  else { kind='オリジナルの重ね方'; msg='対称なので反りにくい。どちらの方向に強くしたいかで、重ね方を工夫できる（CLTも、ひき板を直交させて重ねている）。'; }
+  $('#bKind').innerHTML = `<span class="pill m">${kind}</span>`;
+  $('#bMsg').textContent = msg;
+}
+drawStack();
+
+/* =========================================================
+   ⑥ チェック
+   ========================================================= */
+const Q = [
+  ['主に建築（柱・板）に使われ、比較的軽くやわらかいのは？', ['針葉樹','広葉樹'], 0, 'スギ・ヒノキ・マツなどの針葉樹。'],
+  ['木の種類によって重さ（密度）がちがうのは、なぜ？', ['細胞の壁の厚さと、すき間の大きさがちがうから','木の色がちがうから','年輪の数がちがうから'], 0, '壁があつく、すき間が小さいほど重くかたい。'],
+  ['春〜夏に育つ、色がうすくやわらかい部分は？', ['早材','晩材','心材'], 0, '夏の終わり〜秋に育つ、色がこい部分が晩材。'],
+  ['板目材の、樹皮に近い側の面を何という？', ['木表','木裏','こば'], 0, '中心に近い側が木裏。'],
+  ['繊維方向に直角に切った、年輪が見える面は？', ['こぐち','こば','木表'], 0, '細長い側面がこば。'],
+  ['板を2つの台に渡して押すとき、強いのはどっち？', ['木目が渡る向きと同じ','木目が渡る向きと直角','どちらも同じ'], 0, '直角だと、木目にそってパキッと割れる。'],
+  ['乾燥で、いちばん大きく縮む方向は？', ['接線方向','半径方向','繊維方向'], 0, '接線10：半径5：繊維0.5〜1。'],
+  ['板目材は、乾くとどうなる？', ['木表側がへこむように反る','木裏側がへこむように反る','ほとんど変形しない'], 0, 'ほとんど変形しないのは、まさ目材。'],
+  ['うすい単板を、繊維方向が直交するように貼り合わせた材料は？', ['合板','集成材','パーティクルボード'], 0, '集成材は繊維方向をそろえて重ねる。'],
+  ['木材の小片を接着剤で固めて熱圧した材料は？', ['パーティクルボード','ファイバーボード','CLT'], 0, '繊維まで細かくして固めたものがファイバーボード。'],
+];
+let solved = 0; const qList = $('#qList');
+Q.forEach(([q, ch, ans, ex], qi) => {
+  const d = document.createElement('div');
+  d.innerHTML = `<p class="qq">Q${qi+1}. ${q}</p><div class="ch"></div><p class="ex">${ex}</p>`;
+  const box = d.querySelector('.ch');
+  const order = ch.map((_,i)=>i).sort(() => Math.random()-.5);
+  let done = false;
+  order.forEach(i => {
+    const b = document.createElement('button'); b.textContent = ch[i];
+    b.onclick = () => {
+      if(done) return;
+      if(i===ans){ b.classList.add('ok'); done=true; d.querySelector('.ex').classList.add('on'); solved++; $('#qScore').textContent = `正解 ${solved} / ${Q.length}` + (solved===Q.length ? '　全部できた！ワークシートにまとめよう' : ''); }
+      else b.classList.add('ng');
+    };
+    box.appendChild(b);
+  });
+  qList.appendChild(d);
+});
+})();
+</script>
+</body>
+</html>
